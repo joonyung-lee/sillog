@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="entriesList">
+	<div th:if="${entriesByYear.isEmpty()}">
+		<p class="text-sm text-muted">아직 기록이 없습니다.</p>
+	</div>
+
+	<div th:each="yearEntry : ${entriesByYear}">
+		<!-- Year divider -->
+		<div class="flex items-center gap-4 mb-6" th:if="${!#maps.isEmpty(entriesByYear)}">
+			<span class="text-xs font-medium text-muted uppercase tracking-wide" th:text="${yearEntry.key}">2025</span>
+			<div class="flex-1 h-px bg-border"></div>
+		</div>
+
+		<!-- Entries for this year -->
+		<div class="space-y-6 mb-10">
+			<article th:each="entry : ${yearEntry.value}" class="relative">
+				<!-- Date label -->
+				<div class="mb-2">
+					<span class="text-xs font-medium text-muted uppercase tracking-wide"
+						  th:text="${#temporals.format(entry.date, 'MMM dd')}">DEC 25</span>
+				</div>
+
+				<!-- Entry card -->
+				<div class="border border-border p-4 bg-white">
+					<div class="prose prose-sm max-w-none text-sm leading-relaxed"
+						 th:utext="${entry.contentHtml}">
+						내용이 여기에 표시됩니다.
+					</div>
+				</div>
+			</article>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+
