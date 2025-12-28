@@ -6,21 +6,28 @@
 		<p class="text-muted text-sm mt-1">일상의 짧은 기록</p>
 	</header>
 
-	<!-- Calendar -->
-	<div id="calendar-container"
-		 class="mb-8"
-		 th:hx-get="${'/htmx/changelog/calendar?month=' + currentMonth}"
-		 hx-trigger="load"
-		 hx-swap="innerHTML">
-		<div class="text-sm text-muted">캘린더 불러오는 중...</div>
-	</div>
+	<!-- 2-Column Layout Container -->
+	<div class="flex flex-col-reverse lg:flex-row gap-6">
+		<!-- Entries (60%) -->
+		<div class="w-full lg:w-3/5">
+			<div id="changelog-entries"
+				 th:hx-get="${targetDate != null ? '/htmx/changelog/entries?around=' + targetDate : '/htmx/changelog/entries'}"
+				 hx-trigger="load"
+				 hx-swap="innerHTML">
+				<p class="text-sm text-muted">불러오는 중...</p>
+			</div>
+		</div>
 
-	<!-- Entries -->
-	<div id="changelog-entries"
-		 th:hx-get="${targetDate != null ? '/htmx/changelog/entries?around=' + targetDate : '/htmx/changelog/entries'}"
-		 hx-trigger="load"
-		 hx-swap="innerHTML">
-		<p class="text-sm text-muted">불러오는 중...</p>
+		<!-- Calendar (40%) -->
+		<div class="w-full lg:w-2/5">
+			<div id="calendar-container"
+				 class="lg:sticky lg:top-8"
+				 th:hx-get="${'/htmx/changelog/calendar?month=' + currentMonth}"
+				 hx-trigger="load"
+				 hx-swap="innerHTML">
+				<div class="text-sm text-muted">캘린더 불러오는 중...</div>
+			</div>
+		</div>
 	</div>
 
 	<script th:inline="javascript">
@@ -160,6 +167,12 @@
 		// (htmx:afterRequest는 outerHTML swap 시 요소가 DOM에서 제거되어 bubbling 안 됨)
 		// 따라서 htmx:afterSettle에서 모든 후처리를 수행
 		document.addEventListener('htmx:afterSettle', function(e) {
+			// 캘린더가 로드되면 현재 보이는 날짜들 다시 하이라이트
+			if (e.detail.target.id === 'calendar-container') {
+				highlightCalendar();
+				return;
+			}
+			
 			setupDateHighlight();
 			
 			// 센티넬 로드가 진행 중이었다면 완료 처리
@@ -172,44 +185,48 @@
 		});
 
 		// ─────────────────────────────────────────────────────────────
-		// 3. 현재 보고 있는 날짜 → 캘린더 하이라이트
+		// 3. 현재 보고 있는 날짜들 → 캘린더 하이라이트 (다중)
 		// ─────────────────────────────────────────────────────────────
-		let currentDate = null;
+		let visibleDates = new Set();
 		let dateObserver = null;
 
 		function setupDateHighlight() {
 			if (dateObserver) dateObserver.disconnect();
+			visibleDates.clear();
 
 			dateObserver = new IntersectionObserver((entries) => {
-				const visible = entries
-					.filter(e => e.isIntersecting)
-					.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-
-				if (visible.length > 0) {
-					const date = visible[0].target.dataset.date;
-					if (date && date !== currentDate) {
-						currentDate = date;
-						highlightCalendar(date);
+				entries.forEach(entry => {
+					const date = entry.target.dataset.date;
+					if (!date) return;
+					
+					if (entry.isIntersecting) {
+						visibleDates.add(date);
+					} else {
+						visibleDates.delete(date);
 					}
-				}
-			}, { rootMargin: '-10% 0px -80% 0px' });
+				});
+				
+				highlightCalendar();
+			}, { threshold: 0.01 }); // 1%라도 보이면 감지
 
 			document.querySelectorAll('.changelog-entry').forEach(el => {
 				dateObserver.observe(el);
 			});
 		}
 
-		function highlightCalendar(date) {
+		function highlightCalendar() {
 			// 이전 하이라이트 제거
 			document.querySelectorAll('#calendar-container .ring-2').forEach(el => {
 				el.classList.remove('ring-2', 'ring-ink', 'ring-offset-1');
 			});
 
-			// 새 하이라이트
-			const link = document.querySelector(`#calendar-container a[href="/changelog?date=${date}"]`);
-			if (link) {
-				link.classList.add('ring-2', 'ring-ink', 'ring-offset-1');
-			}
+			// 보이는 모든 날짜 하이라이트
+			visibleDates.forEach(date => {
+				const link = document.querySelector(`#calendar-container a[href="/changelog?date=${date}"]`);
+				if (link) {
+					link.classList.add('ring-2', 'ring-ink', 'ring-offset-1');
+				}
+			});
 		}
 	})();
 	</script>
