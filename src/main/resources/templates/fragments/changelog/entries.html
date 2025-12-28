@@ -1,38 +1,130 @@
 <!doctype html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
-<div th:fragment="entriesList">
-	<div th:if="${entriesByYear.isEmpty()}">
-		<p class="text-sm text-muted">아직 기록이 없습니다.</p>
-	</div>
 
-	<div th:each="yearEntry : ${entriesByYear}">
-		<!-- Year divider -->
-		<div class="flex items-center gap-4 mb-6" th:if="${!#maps.isEmpty(entriesByYear)}">
-			<span class="text-xs font-medium text-muted uppercase tracking-wide" th:text="${yearEntry.key}">2025</span>
-			<div class="flex-1 h-px bg-border"></div>
-		</div>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     초기 로드용 전체 구조
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div th:fragment="entriesList" id="entries-container">
+	<th:block th:if="${entries == null || entries.isEmpty()}">
+		<p class="text-sm text-muted py-8 text-center">아직 기록이 없습니다.</p>
+	</th:block>
 
-		<!-- Entries for this year -->
-		<div class="space-y-6 mb-10">
-			<article th:each="entry : ${yearEntry.value}" class="relative">
-				<!-- Date label -->
-				<div class="mb-2">
-					<span class="text-xs font-medium text-muted uppercase tracking-wide"
-						  th:text="${#temporals.format(entry.date, 'MMM dd')}">DEC 25</span>
-				</div>
+	<th:block th:if="${entries != null && !entries.isEmpty()}">
+		<!-- 위쪽: 더 있으면 센티넬, 없으면 끝 표시 -->
+		<th:block th:if="${hasMoreAfter}">
+			<div th:replace="~{:: sentinelAbove}"></div>
+		</th:block>
+		<th:block th:if="${!hasMoreAfter}">
+			<div th:replace="~{:: endAbove}"></div>
+		</th:block>
 
-				<!-- Entry card -->
-				<div class="border border-border p-4 bg-white">
-					<div class="prose prose-sm max-w-none text-sm leading-relaxed"
-						 th:utext="${entry.contentHtml}">
-						내용이 여기에 표시됩니다.
-					</div>
-				</div>
-			</article>
-		</div>
-	</div>
+		<!-- 엔트리 목록 -->
+		<th:block th:each="entry : ${entries}">
+			<article th:replace="~{:: entryItem(${entry})}"></article>
+		</th:block>
+
+		<!-- 아래쪽: 더 있으면 센티넬, 없으면 끝 표시 -->
+		<th:block th:if="${hasMoreBefore}">
+			<div th:replace="~{:: sentinelBelow}"></div>
+		</th:block>
+		<th:block th:if="${!hasMoreBefore}">
+			<div th:replace="~{:: endBelow}"></div>
+		</th:block>
+	</th:block>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     위로 스크롤용 (sentinel-above가 자기 자신을 이 내용으로 교체)
+     결과: [새 sentinel/끝표시] + [새 entries...] → 기존 sentinel 위치에 삽입
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<th:block th:fragment="moreAbove">
+	<!-- 새 센티넬 또는 끝 표시 -->
+	<th:block th:if="${hasMoreAfter}">
+		<div th:replace="~{:: sentinelAbove}"></div>
+	</th:block>
+	<th:block th:if="${!hasMoreAfter}">
+		<div th:replace="~{:: endAbove}"></div>
+	</th:block>
+
+	<!-- 새 엔트리들 -->
+	<th:block th:each="entry : ${entries}">
+		<article th:replace="~{:: entryItem(${entry})}"></article>
+	</th:block>
+</th:block>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     아래로 스크롤용 (sentinel-below가 자기 자신을 이 내용으로 교체)
+     결과: [새 entries...] + [새 sentinel/끝표시] → 기존 sentinel 위치에 삽입
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<th:block th:fragment="moreBelow">
+	<!-- 새 엔트리들 -->
+	<th:block th:each="entry : ${entries}">
+		<article th:replace="~{:: entryItem(${entry})}"></article>
+	</th:block>
+
+	<!-- 새 센티넬 또는 끝 표시 -->
+	<th:block th:if="${hasMoreBefore}">
+		<div th:replace="~{:: sentinelBelow}"></div>
+	</th:block>
+	<th:block th:if="${!hasMoreBefore}">
+		<div th:replace="~{:: endBelow}"></div>
+	</th:block>
+</th:block>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     개별 엔트리 아이템
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<article th:fragment="entryItem(entry)"
+		 th:id="${#temporals.format(entry.date, 'yyyy-MM-dd')}"
+		 th:data-date="${#temporals.format(entry.date, 'yyyy-MM-dd')}"
+		 class="changelog-entry scroll-mt-20">
+	<div class="mb-2">
+		<span class="text-xs font-medium text-muted uppercase tracking-wide"
+			  th:text="${#temporals.format(entry.date, 'yyyy. M. d. (E)')}">2025. 12. 25. (목)</span>
+	</div>
+	<div class="border border-border p-4 bg-white">
+		<div class="prose prose-sm max-w-none text-sm leading-relaxed"
+			 th:utext="${entry.contentHtml}">내용</div>
+	</div>
+</article>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     위쪽 센티넬 (더 있을 때)
+     - hx-swap="outerHTML": 자기 자신을 서버 응답으로 통째로 교체
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div th:fragment="sentinelAbove"
+	 id="sentinel-above"
+	 th:data-after="${newestDate}"
+	 hx-get="/htmx/changelog/more-after"
+	 hx-trigger="sillog-fire"
+	 hx-swap="outerHTML"
+	 hx-vals="js:{after: document.getElementById('sentinel-above').dataset.after, limit: 10}"
+	 class="h-4 -mt-4">
+</div>
+
+<!-- 위쪽 끝 표시 -->
+<div th:fragment="endAbove" class="py-4 text-center">
+	<span class="text-xs text-muted">— 가장 최근 기록입니다 —</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     아래쪽 센티넬 (더 있을 때)
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div th:fragment="sentinelBelow"
+	 id="sentinel-below"
+	 th:data-before="${oldestDate}"
+	 hx-get="/htmx/changelog/more-before"
+	 hx-trigger="sillog-fire"
+	 hx-swap="outerHTML"
+	 hx-vals="js:{before: document.getElementById('sentinel-below').dataset.before, limit: 10}"
+	 class="h-4">
+</div>
+
+<!-- 아래쪽 끝 표시 -->
+<div th:fragment="endBelow" class="py-4 text-center">
+	<span class="text-xs text-muted">— 마지막 기록입니다 —</span>
+</div>
+
 </body>
 </html>
-

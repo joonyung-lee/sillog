@@ -1,11 +1,12 @@
-package dev.joonyung.joonlog
+package dev.joonyung.sillog
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class JoonlogApplication
+class SillogApplication
 
 fun main(args: Array<String>) {
-	runApplication<JoonlogApplication>(*args)
+	runApplication<SillogApplication>(*args)
 }
+

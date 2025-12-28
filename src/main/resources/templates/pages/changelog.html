@@ -1,17 +1,217 @@
 <!doctype html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::section})}">
 <section>
-	<header class="mb-8">
+	<header class="mb-6">
 		<h1 class="text-lg font-semibold tracking-tight uppercase">Changelog</h1>
 		<p class="text-muted text-sm mt-1">일상의 짧은 기록</p>
 	</header>
 
+	<!-- Calendar -->
+	<div id="calendar-container"
+		 class="mb-8"
+		 th:hx-get="${'/htmx/changelog/calendar?month=' + currentMonth}"
+		 hx-trigger="load"
+		 hx-swap="innerHTML">
+		<div class="text-sm text-muted">캘린더 불러오는 중...</div>
+	</div>
+
+	<!-- Entries -->
 	<div id="changelog-entries"
-		 hx-get="/htmx/changelog/entries"
+		 th:hx-get="${targetDate != null ? '/htmx/changelog/entries?around=' + targetDate : '/htmx/changelog/entries'}"
 		 hx-trigger="load"
 		 hx-swap="innerHTML">
 		<p class="text-sm text-muted">불러오는 중...</p>
 	</div>
+
+	<script th:inline="javascript">
+	(function() {
+		const targetDate = /*[[${targetDate}]]*/ null;
+
+		// ─────────────────────────────────────────────────────────────
+		// 1. 초기 로드 후 타겟 날짜로 스크롤
+		// ─────────────────────────────────────────────────────────────
+		document.addEventListener('htmx:afterSettle', function onInitialLoad(e) {
+			if (e.detail.target.id !== 'changelog-entries') return;
+			document.removeEventListener('htmx:afterSettle', onInitialLoad);
+
+			if (targetDate) {
+				const el = document.getElementById(targetDate);
+				if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+			}
+			setupDateHighlight();
+			armSentinels();
+			
+			// 초기 로드 시 내용이 짧아 센티넬이 이미 보일 경우 바로 로드 시도
+			setTimeout(() => {
+				tryFireSentinel(document.getElementById('sentinel-above'));
+				tryFireSentinel(document.getElementById('sentinel-below'));
+			}, 100);
+		});
+
+		// ─────────────────────────────────────────────────────────────
+		// 2. 무한 스크롤 (정책: 한 번 로드 후, 반드시 "추가 스크롤"이 있어야 다음 로드)
+		//
+		// - sentinel이 뷰포트에 보이고 + armed 상태일 때만 htmx 트리거
+		// - 요청이 시작되면 needsScrollAfterLoad=true로 만들어 "로드 직후 자동 연속 로드"를 차단
+		// - 로드가 끝난 다음, 사용자의 다음 scroll 이벤트에서만 다시 arm
+		//
+		// 3. 위로 로드(최신 방향) 시 스크롤 앵커링
+		//
+		// htmx가 sentinel-above 트리거로 DOM "위쪽"에 엔트리를 추가하면,
+		// 브라우저는 scrollTop을 유지하므로 뷰포트가 아래로 밀리는 느낌이 납니다.
+		// 이를 보정하려고 요청 전/후 scrollHeight diff만큼 scrollBy 합니다.
+		// ─────────────────────────────────────────────────────────────
+		let isLoading = false;
+		let needsScrollAfterLoad = false;
+		let isLoadingAbove = false;
+		// 위로 로드 시 스크롤 위치 보정(Anchoring)용 변수
+		let anchorElementId = null;
+		let anchorElementTop = 0;
+
+		function isVisible(el) {
+			const rect = el.getBoundingClientRect();
+			return rect.bottom > 0 && rect.top < window.innerHeight;
+		}
+
+		function armSentinels() {
+			const above = document.getElementById('sentinel-above');
+			const below = document.getElementById('sentinel-below');
+			if (above) above.dataset.armed = 'true';
+			if (below) below.dataset.armed = 'true';
+		}
+
+		function disarmSentinels() {
+			const above = document.getElementById('sentinel-above');
+			const below = document.getElementById('sentinel-below');
+			if (above) above.dataset.armed = 'false';
+			if (below) below.dataset.armed = 'false';
+		}
+
+		function tryFireSentinel(el) {
+			if (!el) return;
+			if (isLoading) return;
+			if (needsScrollAfterLoad) return; // 로드 직후에는 사용자 "추가 스크롤" 전까지 금지
+			if (el.dataset.armed !== 'true') return;
+			if (!isVisible(el)) return;
+
+			// 이번 스크롤에서 한 번만 발화되도록 즉시 disarm
+			el.dataset.armed = 'false';
+			isLoading = true;
+			needsScrollAfterLoad = true;
+			htmx.trigger(el, 'sillog-fire');
+		}
+
+		let rafPending = false;
+		window.addEventListener('scroll', function() {
+			if (rafPending) return;
+			rafPending = true;
+			requestAnimationFrame(function() {
+				rafPending = false;
+
+				// "로드가 끝난 뒤" 처음 들어오는 스크롤 이벤트에서만 재-arming
+				if (!isLoading && needsScrollAfterLoad) {
+					needsScrollAfterLoad = false;
+					armSentinels();
+				}
+
+				tryFireSentinel(document.getElementById('sentinel-above'));
+				tryFireSentinel(document.getElementById('sentinel-below'));
+			});
+		}, { passive: true });
+
+		// 요청 시작 직전: 앵커 엘리먼트(현재 뷰포트 최상단 엔트리) 위치 저장
+		document.addEventListener('htmx:beforeRequest', function(e) {
+			const elt = e.detail.elt;
+			if (!elt) return;
+
+			// 위쪽 센티널 트리거 시에만 앵커링 필요
+			if (elt.id === 'sentinel-above') {
+				isLoadingAbove = true;
+				// 현재 리스트에 있는 첫 번째 엔트리를 기준으로 잡음
+				const firstEntry = document.querySelector('.changelog-entry');
+				if (firstEntry) {
+					anchorElementId = firstEntry.id;
+					anchorElementTop = firstEntry.getBoundingClientRect().top;
+				}
+			}
+		});
+
+		// DOM 교체 직후 (After Swap): 스크롤 위치 보정
+		document.addEventListener('htmx:afterSwap', function() {
+			if (!isLoadingAbove) return;
+			
+			if (anchorElementId) {
+				const anchorElement = document.getElementById(anchorElementId);
+				if (anchorElement) {
+					const newTop = anchorElement.getBoundingClientRect().top;
+					const diff = newTop - anchorElementTop;
+					
+					// 스무스 스크롤 무시하고 즉시 이동 (중요!)
+					window.scrollBy({ top: diff, behavior: 'instant' });
+				}
+			}
+			
+			isLoadingAbove = false;
+			anchorElementId = null;
+			anchorElementTop = 0;
+		});
+
+		// 센티넬 로드 완료 후 처리
+		// (htmx:afterRequest는 outerHTML swap 시 요소가 DOM에서 제거되어 bubbling 안 됨)
+		// 따라서 htmx:afterSettle에서 모든 후처리를 수행
+		document.addEventListener('htmx:afterSettle', function(e) {
+			setupDateHighlight();
+			
+			// 센티넬 로드가 진행 중이었다면 완료 처리
+			if (isLoading) {
+				isLoading = false;
+				// 연속 로드 방지를 위해 disarm 유지
+				// 다음 스크롤 이벤트에서 armSentinels() 호출됨
+				disarmSentinels();
+			}
+		});
+
+		// ─────────────────────────────────────────────────────────────
+		// 3. 현재 보고 있는 날짜 → 캘린더 하이라이트
+		// ─────────────────────────────────────────────────────────────
+		let currentDate = null;
+		let dateObserver = null;
+
+		function setupDateHighlight() {
+			if (dateObserver) dateObserver.disconnect();
+
+			dateObserver = new IntersectionObserver((entries) => {
+				const visible = entries
+					.filter(e => e.isIntersecting)
+					.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+				if (visible.length > 0) {
+					const date = visible[0].target.dataset.date;
+					if (date && date !== currentDate) {
+						currentDate = date;
+						highlightCalendar(date);
+					}
+				}
+			}, { rootMargin: '-10% 0px -80% 0px' });
+
+			document.querySelectorAll('.changelog-entry').forEach(el => {
+				dateObserver.observe(el);
+			});
+		}
+
+		function highlightCalendar(date) {
+			// 이전 하이라이트 제거
+			document.querySelectorAll('#calendar-container .ring-2').forEach(el => {
+				el.classList.remove('ring-2', 'ring-ink', 'ring-offset-1');
+			});
+
+			// 새 하이라이트
+			const link = document.querySelector(`#calendar-container a[href="/changelog?date=${date}"]`);
+			if (link) {
+				link.classList.add('ring-2', 'ring-ink', 'ring-offset-1');
+			}
+		}
+	})();
+	</script>
 </section>
 </html>
-

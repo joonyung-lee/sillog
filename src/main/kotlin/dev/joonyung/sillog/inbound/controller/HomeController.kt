@@ -1,4 +1,4 @@
-package dev.joonyung.joonlog.inbound.controller
+package dev.joonyung.sillog.inbound.controller
 
 import org.springframework.stereotype.Controller
 import org.springframework.http.MediaType
@@ -9,14 +9,14 @@ import org.springframework.ui.Model
 class HomeController {
 	@GetMapping("/", produces = [MediaType.TEXT_HTML_VALUE])
 	fun home(model: Model): String {
-		model.addAttribute("title", "joonlog")
+		model.addAttribute("title", "sillog")
 		model.addAttribute("currentPage", "home")
 		return "pages/home"
 	}
 
 	@GetMapping("/about", produces = [MediaType.TEXT_HTML_VALUE])
 	fun about(model: Model): String {
-		model.addAttribute("title", "About - joonlog")
+		model.addAttribute("title", "About - sillog")
 		model.addAttribute("currentPage", "about")
 		return "pages/about"
 	}
@@ -27,3 +27,4 @@ class HomeController {
 		return "fragments/hello :: helloResult"
 	}
 }
+

@@ -1,4 +1,4 @@
-package dev.joonyung.joonlog.domain
+package dev.joonyung.sillog.domain
 
 import java.time.LocalDate
 

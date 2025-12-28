@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="calendar" class="border border-border bg-white p-4">
+	<!-- Header: month navigation -->
+	<div class="flex items-center justify-between mb-4">
+		<button th:hx-get="${'/htmx/changelog/calendar?month=' + prevMonth}"
+				hx-target="#calendar-container"
+				hx-swap="innerHTML"
+				class="p-1 text-muted hover:text-ink transition-colors">
+			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
+			</svg>
+		</button>
+		<span class="text-sm font-medium" th:text="${currentMonthDisplay}">2025년 12월</span>
+		<button th:hx-get="${'/htmx/changelog/calendar?month=' + nextMonth}"
+				hx-target="#calendar-container"
+				hx-swap="innerHTML"
+				class="p-1 text-muted hover:text-ink transition-colors">
+			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
+			</svg>
+		</button>
+	</div>
+
+	<!-- Weekday headers -->
+	<div class="grid grid-cols-7 gap-1 mb-2">
+		<div class="text-center text-xs text-muted py-1">일</div>
+		<div class="text-center text-xs text-muted py-1">월</div>
+		<div class="text-center text-xs text-muted py-1">화</div>
+		<div class="text-center text-xs text-muted py-1">수</div>
+		<div class="text-center text-xs text-muted py-1">목</div>
+		<div class="text-center text-xs text-muted py-1">금</div>
+		<div class="text-center text-xs text-muted py-1">토</div>
+	</div>
+
+	<!-- Calendar grid -->
+	<div class="grid grid-cols-7 gap-1">
+		<th:block th:each="day : ${calendarDays}">
+			<!-- Empty cell -->
+			<div th:if="${day == null}" class="aspect-square"></div>
+			
+			<!-- Day with entry -->
+			<a th:if="${day != null && day.hasEntry}"
+			   th:href="${'/changelog?date=' + day.date}"
+			   th:text="${day.day}"
+			   th:class="${day.isToday 
+			   		? 'aspect-square flex items-center justify-center text-xs font-medium bg-ink text-white hover:bg-muted transition-colors cursor-pointer' 
+			   		: 'aspect-square flex items-center justify-center text-xs font-medium bg-subtle hover:bg-border transition-colors cursor-pointer'}">
+				25
+			</a>
+			
+			<!-- Day without entry -->
+			<div th:if="${day != null && !day.hasEntry}"
+				 th:text="${day.day}"
+				 th:class="${day.isToday 
+				 	? 'aspect-square flex items-center justify-center text-xs text-white bg-muted' 
+				 	: 'aspect-square flex items-center justify-center text-xs text-muted'}">
+				25
+			</div>
+		</th:block>
+	</div>
+</div>
+</body>
+</html>
+

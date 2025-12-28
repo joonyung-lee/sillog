@@ -1,4 +1,4 @@
-package dev.joonyung.joonlog.inbound.config
+package dev.joonyung.sillog.inbound.config
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.config.ResourceHandlerRegistry
@@ -9,8 +9,8 @@ class WebConfig : WebFluxConfigurer {
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         // content/images/ 디렉토리를 /images/** 경로로 서빙
-        registry.addResourceHandler("/images/**")
-            .addResourceLocations("file:content/images/")
+        registry.addResourceHandler("/changelog/**")
+            .addResourceLocations("file:content/changelog/")
     }
 }
 

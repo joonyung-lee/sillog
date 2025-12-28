@@ -7,7 +7,7 @@ plugins {
 
 group = "dev.joonyung"
 version = "0.0.1-SNAPSHOT"
-description = "joonlog"
+description = "sillog"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
