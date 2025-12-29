@@ -6,17 +6,10 @@
      초기 로드용 전체 구조
      ═══════════════════════════════════════════════════════════════════════════ -->
 <div th:fragment="entriesList" id="entries-container">
-	<th:block th:if="${entries == null || entries.isEmpty()}">
-		<p class="text-sm text-muted py-8 text-center">아직 기록이 없습니다.</p>
-	</th:block>
-
 	<th:block th:if="${entries != null && !entries.isEmpty()}">
 		<!-- 위쪽: 더 있으면 센티넬, 없으면 끝 표시 -->
 		<th:block th:if="${hasMoreAfter}">
 			<div th:replace="~{:: sentinelAbove}"></div>
-		</th:block>
-		<th:block th:if="${!hasMoreAfter}">
-			<div th:replace="~{:: endAbove}"></div>
 		</th:block>
 
 		<!-- 엔트리 목록 -->
@@ -27,9 +20,6 @@
 		<!-- 아래쪽: 더 있으면 센티넬, 없으면 끝 표시 -->
 		<th:block th:if="${hasMoreBefore}">
 			<div th:replace="~{:: sentinelBelow}"></div>
-		</th:block>
-		<th:block th:if="${!hasMoreBefore}">
-			<div th:replace="~{:: endBelow}"></div>
 		</th:block>
 	</th:block>
 </div>
@@ -103,11 +93,6 @@
 	 class="h-4 -mt-4">
 </div>
 
-<!-- 위쪽 끝 표시 -->
-<div th:fragment="endAbove" class="py-4 text-center">
-	<span class="text-xs text-muted">— 가장 최근 기록입니다 —</span>
-</div>
-
 <!-- ═══════════════════════════════════════════════════════════════════════════
      아래쪽 센티넬 (더 있을 때)
      ═══════════════════════════════════════════════════════════════════════════ -->
@@ -119,11 +104,6 @@
 	 hx-swap="outerHTML"
 	 hx-vals="js:{before: document.getElementById('sentinel-below').dataset.before, limit: 10}"
 	 class="h-4">
-</div>
-
-<!-- 아래쪽 끝 표시 -->
-<div th:fragment="endBelow" class="py-4 text-center">
-	<span class="text-xs text-muted">— 마지막 기록입니다 —</span>
 </div>
 
 </body>

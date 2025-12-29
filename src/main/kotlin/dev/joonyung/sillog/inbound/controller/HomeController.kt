@@ -1,30 +1,31 @@
 package dev.joonyung.sillog.inbound.controller
 
-import org.springframework.stereotype.Controller
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.reactive.result.view.RedirectView
 
 @Controller
 class HomeController {
-	@GetMapping("/", produces = [MediaType.TEXT_HTML_VALUE])
-	fun home(model: Model): String {
-		model.addAttribute("title", "sillog")
-		model.addAttribute("currentPage", "home")
-		return "pages/home"
-	}
 
-	@GetMapping("/about", produces = [MediaType.TEXT_HTML_VALUE])
-	fun about(model: Model): String {
-		model.addAttribute("title", "About - sillog")
-		model.addAttribute("currentPage", "about")
-		return "pages/about"
-	}
+    @GetMapping("/")
+    fun home(): RedirectView {
+        return RedirectView("/changelog", HttpStatus.FOUND)
+    }
 
-	@GetMapping("/htmx/hello", produces = [MediaType.TEXT_HTML_VALUE])
-	fun helloFragment(model: Model): String {
-		model.addAttribute("now", java.time.Instant.now().toString())
-		return "fragments/hello :: helloResult"
-	}
+    @GetMapping("/about", produces = [MediaType.TEXT_HTML_VALUE])
+    fun about(model: Model): String {
+        model.addAttribute("title", "About - sillog")
+        model.addAttribute("currentPage", "about")
+        return "pages/about"
+    }
+
+    @GetMapping("/blog", produces = [MediaType.TEXT_HTML_VALUE])
+    fun blog(model: Model): String {
+        model.addAttribute("title", "Blog - sillog")
+        model.addAttribute("currentPage", "blog")
+        return "pages/blog"
+    }
 }
-

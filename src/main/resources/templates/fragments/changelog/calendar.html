@@ -3,7 +3,7 @@
 <body>
 <div th:fragment="calendar" class="border border-border bg-white">
 	<!-- Header: toggle + month navigation -->
-	<div class="flex items-center justify-between p-4">
+	<div class="flex items-center justify-between px-4 py-3">
 		<button type="button"
 				onclick="toggleCalendar()"
 				class="flex items-center gap-2 text-sm font-medium hover:text-muted transition-colors">
@@ -15,7 +15,6 @@
 			<svg id="calendar-icon-expand" class="w-3 h-3 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
 			</svg>
-			<!-- 접힌 상태: Calendar / 펼친 상태: 연월 표시 -->
 			<span id="calendar-label-collapsed" class="hidden">Calendar</span>
 			<span id="calendar-label-expanded" th:text="${currentMonthDisplay}">2025년 12월</span>
 		</button>
@@ -23,7 +22,7 @@
 			<button th:hx-get="${'/htmx/changelog/calendar?month=' + prevMonth}"
 					hx-target="#calendar-container"
 					hx-swap="innerHTML"
-					class="p-1 text-muted hover:text-ink transition-colors">
+					class="p-1.5 text-muted hover:text-ink transition-colors">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
 				</svg>
@@ -31,7 +30,7 @@
 			<button th:hx-get="${'/htmx/changelog/calendar?month=' + nextMonth}"
 					hx-target="#calendar-container"
 					hx-swap="innerHTML"
-					class="p-1 text-muted hover:text-ink transition-colors">
+					class="p-1.5 text-muted hover:text-ink transition-colors">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
 				</svg>
@@ -43,13 +42,13 @@
 	<div id="calendar-body" class="px-4 pb-4">
 		<!-- Weekday headers -->
 		<div class="grid grid-cols-7 gap-1 mb-2">
-			<div class="text-center text-xs text-muted py-1">일</div>
-			<div class="text-center text-xs text-muted py-1">월</div>
-			<div class="text-center text-xs text-muted py-1">화</div>
-			<div class="text-center text-xs text-muted py-1">수</div>
-			<div class="text-center text-xs text-muted py-1">목</div>
-			<div class="text-center text-xs text-muted py-1">금</div>
-			<div class="text-center text-xs text-muted py-1">토</div>
+			<div class="text-center text-xs text-muted py-1">S</div>
+			<div class="text-center text-xs text-muted py-1">M</div>
+			<div class="text-center text-xs text-muted py-1">T</div>
+			<div class="text-center text-xs text-muted py-1">W</div>
+			<div class="text-center text-xs text-muted py-1">T</div>
+			<div class="text-center text-xs text-muted py-1">F</div>
+			<div class="text-center text-xs text-muted py-1">S</div>
 		</div>
 
 		<!-- Calendar grid -->
@@ -81,7 +80,6 @@
 	</div>
 
 	<script>
-		// 캘린더 접기/펴기 상태 관리
 		(function() {
 			const STORAGE_KEY = 'calendar-collapsed';
 			const body = document.getElementById('calendar-body');
@@ -91,14 +89,12 @@
 			const labelCollapsed = document.getElementById('calendar-label-collapsed');
 			const labelExpanded = document.getElementById('calendar-label-expanded');
 			
-			// 모바일 여부 확인 (lg breakpoint = 1024px)
 			const isMobile = () => window.innerWidth < 1024;
 			
-			// 저장된 상태 또는 기본값 (모바일은 접힘, 데스크톱은 펼침)
 			function getDefaultState() {
 				const saved = localStorage.getItem(STORAGE_KEY);
 				if (saved !== null) return saved === 'true';
-				return isMobile(); // 모바일이면 true (접힘)
+				return isMobile();
 			}
 			
 			function applyState(collapsed) {
@@ -119,10 +115,8 @@
 				}
 			}
 			
-			// 초기 상태 적용
 			applyState(getDefaultState());
 			
-			// 전역 토글 함수
 			window.toggleCalendar = function() {
 				const isCurrentlyCollapsed = body.classList.contains('hidden');
 				const newState = !isCurrentlyCollapsed;
