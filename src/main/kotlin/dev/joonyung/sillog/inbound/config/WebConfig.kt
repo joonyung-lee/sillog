@@ -8,7 +8,9 @@ import org.springframework.web.reactive.config.WebFluxConfigurer
 class WebConfig : WebFluxConfigurer {
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        // content/images/ 디렉토리를 /images/** 경로로 서빙
+        // Serve static files from content/changelog/
+        // Pattern: /changelog/2025-12-31/img.png → content/changelog/2025-12-31/img.png
+        // In production, Caddy filters to images only; here we serve all for simplicity
         registry.addResourceHandler("/changelog/**")
             .addResourceLocations("file:content/changelog/")
     }

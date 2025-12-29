@@ -1,0 +1,55 @@
+services:
+  sillog:
+    build: .
+    image: sillog:latest
+    container_name: sillog
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SILLOG_WEBHOOK_API_KEY=${SILLOG_WEBHOOK_API_KEY}
+    volumes:
+      - sillog-content:/app/content:rw
+    expose:
+      - "8080"  # Only expose to internal network, not host
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - sillog-network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: sillog-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - sillog-content:/srv/content:ro  # Static files (read-only)
+      - caddy-data:/data
+      - caddy-config:/config
+      - caddy-logs:/var/log/caddy
+    restart: unless-stopped
+    depends_on:
+      sillog:
+        condition: service_healthy
+    networks:
+      - sillog-network
+
+volumes:
+  sillog-content:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/data/sillog-content
+  caddy-data:
+  caddy-config:
+  caddy-logs:
+
+networks:
+  sillog-network:
+    driver: bridge

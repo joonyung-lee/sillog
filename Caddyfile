@@ -1,0 +1,49 @@
+# Caddyfile for sillog
+# Replace sillog.dev with your actual domain
+
+sillog.dev {
+    # Compression
+    encode gzip zstd
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/sillog.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+
+    # Static files - serve images directly from date directories
+    # Matches: /changelog/2025-12-31/img.png
+    @static_files {
+        path_regexp static ^/changelog/[0-9]{4}-[0-9]{2}-[0-9]{2}/.*\.(png|jpg|jpeg|gif|webp|svg)$
+    }
+
+    # 1) Static files - serve directly and stop here
+    handle @static_files {
+        root * /srv/content
+        file_server
+    }
+
+    # 2) Everything else - proxy to Spring Boot
+    handle {
+        reverse_proxy sillog:8080 {
+            health_uri /actuator/health
+            health_interval 30s
+            health_timeout 10s
+        }
+    }
+}
+
+# Redirect www to non-www
+www.sillog.dev {
+    redir https://sillog.dev{uri} permanent
+}
