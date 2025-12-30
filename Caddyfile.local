@@ -1,0 +1,19 @@
+# Caddyfile for local development (HTTP only, no domain)
+
+:80 {
+	encode gzip zstd
+
+	@static_files {
+		path_regexp ^/changelog/[0-9]{4}-[0-9]{2}-[0-9]{2}/.*\.(png|jpg|jpeg|gif|webp|svg)$
+	}
+
+	handle @static_files {
+		root * /srv/content
+		file_server
+	}
+
+	handle {
+		reverse_proxy sillog:8080
+	}
+}
+

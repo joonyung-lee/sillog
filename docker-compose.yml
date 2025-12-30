@@ -27,7 +27,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./${CADDYFILE:-Caddyfile}:/etc/caddy/Caddyfile:ro
       - sillog-content:/srv/content:ro  # Static files (read-only)
       - caddy-data:/data
       - caddy-config:/config
@@ -45,7 +45,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /var/data/sillog-content
+      device: ${CONTENT_PATH}
   caddy-data:
   caddy-config:
   caddy-logs:

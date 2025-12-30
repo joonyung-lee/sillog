@@ -70,11 +70,31 @@ git clone <content-repo-url> /var/data/sillog-content
 # 2. Environment file
 cp .env.example .env
 vim .env
-# SPRING_PROFILES_ACTIVE=prod
-# SILLOG_WEBHOOK_API_KEY=$(openssl rand -hex 32)
+```
 
-# 3. Update domain in Caddyfile
-vim Caddyfile
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SPRING_PROFILES_ACTIVE` | Spring profile (`local` / `prod`) | - |
+| `SILLOG_WEBHOOK_API_KEY` | API key for content sync webhook | - |
+| `CONTENT_PATH` | Host path to content directory | `/var/data/sillog-content` |
+| `CADDYFILE` | Caddyfile to use | `Caddyfile` |
+
+Example `.env` for local development:
+```bash
+SPRING_PROFILES_ACTIVE=local
+SILLOG_WEBHOOK_API_KEY=local-dev-key
+CONTENT_PATH=/Users/me/sillog-content
+CADDYFILE=Caddyfile.local
+```
+
+Example `.env` for production:
+```bash
+SPRING_PROFILES_ACTIVE=prod
+SILLOG_WEBHOOK_API_KEY=$(openssl rand -hex 32)
+CONTENT_PATH=/var/data/sillog-content
+CADDYFILE=Caddyfile
 ```
 
 ### Build & Deploy
