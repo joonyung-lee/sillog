@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko"
+	  xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout/base :: layout(~{::content})}">
+<body>
+<div th:fragment="content" class="h-full flex flex-col">
+	<a href="/blog" class="inline-flex items-center gap-1 text-sm text-muted hover:text-ink transition-colors mb-6">
+		<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+		</svg>
+		Back to blog list
+	</a>
+
+	<div class="flex-1 min-h-0 overflow-y-auto">
+		<article class="max-w-2xl">
+			<header class="mb-8 pb-6 border-b border-border">
+				<p class="text-sm text-muted mb-2" th:text="${post.formattedDate}">2025. 12. 30</p>
+				<h1 class="text-xl font-semibold text-ink" th:text="${post.title}">글 제목</h1>
+			</header>
+
+			<div class="prose text-sm leading-relaxed" th:utext="${post.contentHtml}">
+				본문 내용
+			</div>
+		</article>
+	</div>
+</div>
+</body>
+</html>
+

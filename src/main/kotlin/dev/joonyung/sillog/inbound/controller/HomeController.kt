@@ -22,10 +22,4 @@ class HomeController {
         return "pages/about"
     }
 
-    @GetMapping("/blog", produces = [MediaType.TEXT_HTML_VALUE])
-    fun blog(model: Model): String {
-        model.addAttribute("title", "Blog - sillog")
-        model.addAttribute("currentPage", "blog")
-        return "pages/blog"
-    }
 }
