@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
-<div th:fragment="goalTree" class="border border-border bg-white h-full flex flex-col min-h-0">
+<div th:fragment="goalTree" class="border-x border-b border-border bg-white h-full flex flex-col min-h-0">
 	<!-- 헤더 (고정) -->
-	<div class="flex items-center justify-between px-4 py-3 flex-shrink-0 border-b border-border">
+	<div class="flex items-center justify-between px-4 py-2 flex-shrink-0">
 		<button type="button"
 				onclick="toggleGoals()"
 				class="flex items-center gap-2 text-sm font-medium hover:text-muted transition-colors">
@@ -13,8 +13,8 @@
 			<svg id="goals-icon-expand" class="w-3 h-3 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
 			</svg>
-			<span id="goals-label-collapsed" class="hidden">Goals</span>
-			<span id="goals-label-expanded">Goals</span>
+			<span id="goals-label-collapsed" class="hidden">Roadmap</span>
+			<span id="goals-label-expanded">Roadmap</span>
 		</button>
 	</div>
 
@@ -99,12 +99,12 @@
 			<!-- 우측 영역: 완료일 또는 프로그레스 바 -->
 			<div class="ml-auto flex items-center">
 				<!-- COMPLETED + completedAt: 날짜 표시 -->
-				<th:block th:if="${goal.status == 'COMPLETED' && goal.completedAt != null}">
+				<th:block th:if="${goal.status == 'COMPLETED' and goal.completedAt != null}">
 					<span class="text-xs text-muted tabular-nums" th:text="${goal.completedAt}">2025. 12. 30</span>
 				</th:block>
 
 				<!-- 부모 노드 & 미완료: 프로그레스 바 -->
-				<th:block th:if="${!goal.isLeaf && goal.status != 'COMPLETED'}">
+				<th:block th:if="${!goal.isLeaf and goal.status != 'COMPLETED'}">
 					<div class="flex items-center gap-1.5">
 						<div class="w-16 h-1 bg-subtle">
 							<div class="h-full bg-ink" th:style="'width: ' + ${goal.completionPercent} + '%'"></div>

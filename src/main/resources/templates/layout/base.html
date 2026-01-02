@@ -60,12 +60,21 @@
 			height: 2px;
 			background-color: #111111;
 		}
+
+		/* Hide scrollbar */
+		.hide-scrollbar::-webkit-scrollbar {
+			display: none;
+		}
+		.hide-scrollbar {
+			-ms-overflow-style: none;
+			scrollbar-width: none;
+		}
 	</style>
 </head>
 <body class="bg-white text-ink antialiased">
 	<!-- Header -->
 	<header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-border">
-		<div class="px-8 h-14 flex items-center justify-between">
+		<div class="px-8 h-10 flex items-center justify-between">
 			<!-- Logo (left-aligned) -->
 			<a href="/changelog" class="text-lg font-semibold tracking-tight hover:text-muted transition-colors">
 				joonyung

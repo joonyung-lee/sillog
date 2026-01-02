@@ -24,7 +24,7 @@ data class BlogPostDetailView(
 class BlogUseCase(
     private val blogPostRepository: BlogPostRepository
 ) {
-    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy. M. d")
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy. M. d.")
 
     suspend fun getPostList(): List<BlogPostListView> {
         return blogPostRepository.findAll().map { it.toListView() }

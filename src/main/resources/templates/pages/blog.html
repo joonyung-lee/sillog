@@ -4,12 +4,12 @@
 	  th:replace="~{layout/base :: layout(~{::content})}">
 <body>
 <div th:fragment="content" class="h-full flex flex-col">
-	<div class="flex-1 min-h-0 overflow-y-auto">
+	<div class="flex-1 min-h-0 overflow-y-auto pl-4">
 		<th:block th:if="${posts != null && !posts.isEmpty()}">
-			<div class="flex flex-col gap-3">
+			<div class="flex flex-col gap-2">
 				<th:block th:each="post : ${posts}">
 					<a th:href="@{'/blog/' + ${post.slug}}"
-					   class="flex items-baseline gap-4 group py-1">
+					   class="flex items-baseline gap-4 group py-1.5">
 						<span class="w-24 flex-shrink-0 text-sm text-muted tabular-nums"
 							  th:text="${post.formattedDate}">2025. 12. 30</span>
 						<span class="text-sm font-medium text-ink group-hover:underline underline-offset-2"
@@ -20,7 +20,7 @@
 		</th:block>
 
 		<th:block th:if="${posts == null || posts.isEmpty()}">
-			<p class="text-sm text-muted">No posts yet.</p>
+			<p class="text-sm text-muted pl-4">No posts yet.</p>
 		</th:block>
 	</div>
 </div>

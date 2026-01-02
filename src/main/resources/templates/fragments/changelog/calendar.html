@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
-<div th:fragment="calendar" class="border border-border bg-white">
+<div th:fragment="calendar" class="border-x border-t border-border bg-white">
 	<!-- Header: toggle + month navigation -->
-	<div class="flex items-center justify-between px-4 py-3">
+	<div class="flex items-center justify-between px-4 py-2">
 		<button type="button"
 				onclick="toggleCalendar()"
 				class="flex items-center gap-2 text-sm font-medium hover:text-muted transition-colors">
@@ -52,7 +52,7 @@
 		</div>
 
 		<!-- Calendar grid -->
-		<div class="grid grid-cols-7 gap-0.5">
+		<div class="grid grid-cols-7 gap-1">
 			<th:block th:each="day : ${calendarDays}">
 				<!-- Empty cell -->
 				<div th:if="${day == null}" class="h-6"></div>

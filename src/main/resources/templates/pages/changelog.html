@@ -5,7 +5,7 @@
 	<!-- 2-Column Layout Container (독립 스크롤) -->
 	<div class="flex-1 min-h-0 flex flex-col-reverse lg:flex-row gap-6">
 		<!-- Entries (70%) - 자체 스크롤 -->
-		<div class="flex-1 lg:w-[70%] min-h-0 overflow-y-auto" id="changelog-scroll-container">
+		<div class="flex-1 lg:w-[70%] min-h-0 overflow-y-auto pt-2 hide-scrollbar" id="changelog-scroll-container">
 			<div id="changelog-entries"
 				 th:hx-get="${targetDate != null ? '/htmx/changelog/entries?around=' + targetDate : '/htmx/changelog/entries'}"
 				 hx-trigger="load"
@@ -14,21 +14,21 @@
 			</div>
 		</div>
 
-		<!-- Right Panel: Goals + Calendar (30%) -->
+		<!-- Right Panel: Calendar + Roadmap (30%) -->
 		<div class="w-full lg:w-[30%] flex-shrink-0 flex flex-col min-h-0">
-			<!-- Goal Tree (flex-1, 자체 스크롤) -->
-			<div id="goals-container"
-				 class="flex-1 min-h-0"
-				 hx-get="/htmx/goals/tree"
+			<!-- Calendar (고정 높이) -->
+			<div id="calendar-container"
+				 class="flex-shrink-0"
+				 th:hx-get="${'/htmx/changelog/calendar?month=' + currentMonth}"
 				 hx-trigger="load"
 				 hx-swap="innerHTML">
 				<div class="text-sm text-muted">Loading...</div>
 			</div>
 
-			<!-- Calendar (고정 높이) -->
-			<div id="calendar-container"
-				 class="flex-shrink-0"
-				 th:hx-get="${'/htmx/changelog/calendar?month=' + currentMonth}"
+			<!-- Roadmap (flex-1, 자체 스크롤) -->
+			<div id="goals-container"
+				 class="flex-1 min-h-0"
+				 hx-get="/htmx/goals/tree"
 				 hx-trigger="load"
 				 hx-swap="innerHTML">
 				<div class="text-sm text-muted">Loading...</div>
@@ -218,14 +218,14 @@
 		}
 
 		function highlightCalendar() {
-			document.querySelectorAll('#calendar-container .ring-2').forEach(el => {
-				el.classList.remove('ring-2', 'ring-ink', 'ring-offset-1');
+			document.querySelectorAll('#calendar-container .calendar-highlight').forEach(el => {
+				el.classList.remove('calendar-highlight', 'outline', 'outline-1', 'outline-ink', '-outline-offset-1');
 			});
 
 			visibleDates.forEach(date => {
 				const link = document.querySelector(`#calendar-container a[href="/changelog?date=${date}"]`);
 				if (link) {
-					link.classList.add('ring-2', 'ring-ink', 'ring-offset-1');
+					link.classList.add('calendar-highlight', 'outline', 'outline-1', 'outline-ink', '-outline-offset-1');
 				}
 			});
 		}
