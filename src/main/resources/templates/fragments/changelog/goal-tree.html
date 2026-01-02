@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="goalTree" class="border border-border bg-white h-full flex flex-col min-h-0">
+	<!-- 헤더 (고정) -->
+	<div class="flex items-center justify-between px-4 py-3 flex-shrink-0 border-b border-border">
+		<button type="button"
+				onclick="toggleGoals()"
+				class="flex items-center gap-2 text-sm font-medium hover:text-muted transition-colors">
+			<svg id="goals-icon-collapse" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+			</svg>
+			<svg id="goals-icon-expand" class="w-3 h-3 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+			</svg>
+			<span id="goals-label-collapsed" class="hidden">Goals</span>
+			<span id="goals-label-expanded">Goals</span>
+		</button>
+	</div>
+
+	<!-- 목표 트리 (스크롤 가능) -->
+	<div id="goals-body" class="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+		<div class="space-y-1">
+			<th:block th:each="goal : ${goals}">
+				<div th:replace="~{fragments/changelog/goal-tree :: goalNode(${goal})}"></div>
+			</th:block>
+		</div>
+	</div>
+
+	<script>
+		(function() {
+			const STORAGE_KEY = 'goals-collapsed';
+			const container = document.querySelector('[th\\:fragment="goalTree"]') || document.querySelector('.goals-tree-container');
+			const body = document.getElementById('goals-body');
+			const iconCollapse = document.getElementById('goals-icon-collapse');
+			const iconExpand = document.getElementById('goals-icon-expand');
+			const labelCollapsed = document.getElementById('goals-label-collapsed');
+			const labelExpanded = document.getElementById('goals-label-expanded');
+
+			const isMobile = () => window.innerWidth < 1024;
+
+			function getDefaultState() {
+				const saved = localStorage.getItem(STORAGE_KEY);
+				if (saved !== null) return saved === 'true';
+				return isMobile();
+			}
+
+			function applyState(collapsed) {
+				const parent = body.parentElement;
+				if (collapsed) {
+					body.classList.add('hidden');
+					iconCollapse.classList.add('hidden');
+					iconExpand.classList.remove('hidden');
+					labelCollapsed.classList.remove('hidden');
+					labelExpanded.classList.add('hidden');
+					if (parent) parent.classList.remove('flex-1');
+				} else {
+					body.classList.remove('hidden');
+					iconCollapse.classList.remove('hidden');
+					iconExpand.classList.add('hidden');
+					labelCollapsed.classList.add('hidden');
+					labelExpanded.classList.remove('hidden');
+					if (parent) parent.classList.add('flex-1');
+				}
+			}
+
+			applyState(getDefaultState());
+
+			window.toggleGoals = function() {
+				const isCurrentlyCollapsed = body.classList.contains('hidden');
+				const newState = !isCurrentlyCollapsed;
+				localStorage.setItem(STORAGE_KEY, newState);
+				applyState(newState);
+			};
+		})();
+	</script>
+</div>
+
+<th:block th:fragment="goalNode(goal)">
+	<div class="goal-node" th:classappend="${goal.depth > 0 ? 'ml-4' : ''}">
+		<div class="flex items-center gap-2 py-0.5">
+			<!-- 아이콘: Status에 따라 다르게 표시 -->
+			<th:block th:if="${goal.isLeaf}">
+				<span th:if="${goal.status == 'COMPLETED'}" class="text-ink text-xs">✓</span>
+				<span th:if="${goal.status == 'IN_PROGRESS'}" class="text-ink text-xs">◐</span>
+				<span th:if="${goal.status == 'PENDING'}" class="text-muted text-xs">○</span>
+			</th:block>
+			<th:block th:unless="${goal.isLeaf}">
+				<span th:if="${goal.status == 'COMPLETED'}" class="text-ink text-xs">✓</span>
+				<span th:unless="${goal.status == 'COMPLETED'}" class="text-muted text-xs">▸</span>
+			</th:block>
+
+			<!-- 제목: Status에 따라 색상 -->
+			<span th:text="${goal.title}"
+				  th:class="${goal.status == 'PENDING' ? 'text-sm text-muted' : 'text-sm text-ink'}">
+				Title
+			</span>
+
+			<!-- 우측 영역: 완료일 또는 프로그레스 바 -->
+			<div class="ml-auto flex items-center">
+				<!-- COMPLETED + completedAt: 날짜 표시 -->
+				<th:block th:if="${goal.status == 'COMPLETED' && goal.completedAt != null}">
+					<span class="text-xs text-muted tabular-nums" th:text="${goal.completedAt}">2025. 12. 30</span>
+				</th:block>
+
+				<!-- 부모 노드 & 미완료: 프로그레스 바 -->
+				<th:block th:if="${!goal.isLeaf && goal.status != 'COMPLETED'}">
+					<div class="flex items-center gap-1.5">
+						<div class="w-16 h-1 bg-subtle">
+							<div class="h-full bg-ink" th:style="'width: ' + ${goal.completionPercent} + '%'"></div>
+						</div>
+						<span class="text-xs text-muted tabular-nums w-7 text-right" th:text="${goal.completionPercent} + '%'">50%</span>
+					</div>
+				</th:block>
+			</div>
+		</div>
+
+		<th:block th:if="${!goal.children.isEmpty()}">
+			<th:block th:each="child : ${goal.children}">
+				<div th:replace="~{fragments/changelog/goal-tree :: goalNode(${child})}"></div>
+			</th:block>
+		</th:block>
+	</div>
+</th:block>
+</body>
+</html>
+

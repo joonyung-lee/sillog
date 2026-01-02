@@ -52,18 +52,18 @@
 		</div>
 
 		<!-- Calendar grid -->
-		<div class="grid grid-cols-7 gap-1">
+		<div class="grid grid-cols-7 gap-0.5">
 			<th:block th:each="day : ${calendarDays}">
 				<!-- Empty cell -->
-				<div th:if="${day == null}" class="aspect-square"></div>
+				<div th:if="${day == null}" class="h-6"></div>
 				
 				<!-- Day with entry -->
 				<a th:if="${day != null && day.hasEntry}"
 				   th:href="${'/changelog?date=' + day.date}"
 				   th:text="${day.day}"
 				   th:class="${day.isToday 
-				   		? 'aspect-square flex items-center justify-center text-xs font-medium bg-ink text-white hover:bg-muted transition-colors cursor-pointer' 
-				   		: 'aspect-square flex items-center justify-center text-xs font-medium bg-subtle hover:bg-border transition-colors cursor-pointer'}">
+				   		? 'h-6 flex items-center justify-center text-xs font-medium bg-ink text-white hover:bg-muted transition-colors cursor-pointer' 
+				   		: 'h-6 flex items-center justify-center text-xs font-medium bg-subtle hover:bg-border transition-colors cursor-pointer'}">
 					25
 				</a>
 				
@@ -71,8 +71,8 @@
 				<div th:if="${day != null && !day.hasEntry}"
 					 th:text="${day.day}"
 					 th:class="${day.isToday 
-					 	? 'aspect-square flex items-center justify-center text-xs text-white bg-muted' 
-					 	: 'aspect-square flex items-center justify-center text-xs text-muted'}">
+					 	? 'h-6 flex items-center justify-center text-xs text-white bg-muted' 
+					 	: 'h-6 flex items-center justify-center text-xs text-muted'}">
 					25
 				</div>
 			</th:block>

@@ -1,6 +1,7 @@
 package dev.joonyung.sillog.inbound.controller
 
 import dev.joonyung.sillog.application.ChangelogService
+import dev.joonyung.sillog.application.GoalUseCase
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -12,7 +13,8 @@ import java.time.format.DateTimeFormatter
 
 @Controller
 class ChangelogController(
-    private val changelogService: ChangelogService
+    private val changelogService: ChangelogService,
+    private val goalUseCase: GoalUseCase
 ) {
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -121,6 +123,13 @@ class ChangelogController(
         model.addAttribute("nextMonth", currentMonth.plusMonths(1).toString())
         model.addAttribute("calendarDays", calendarDays)
         return "fragments/changelog/calendar :: calendar"
+    }
+
+    @GetMapping("/htmx/goals/tree", produces = [MediaType.TEXT_HTML_VALUE])
+    suspend fun goalTree(model: Model): String {
+        val goalTree = goalUseCase.getGoalTree()
+        model.addAttribute("goals", goalTree)
+        return "fragments/changelog/goal-tree :: goalTree"
     }
 
     data class CalendarDay(

@@ -63,17 +63,19 @@
 </th:block>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
-     개별 엔트리 아이템
+     개별 엔트리 아이템 (인라인 레이아웃: 날짜 | 내용)
      ═══════════════════════════════════════════════════════════════════════════ -->
 <article th:fragment="entryItem(entry)"
 		 th:id="${#temporals.format(entry.date, 'yyyy-MM-dd')}"
 		 th:data-date="${#temporals.format(entry.date, 'yyyy-MM-dd')}"
-		 class="changelog-entry scroll-mt-20">
-	<div class="mb-2">
+		 class="changelog-entry flex gap-4 mb-6">
+	<!-- 날짜 (고정 너비, 오른쪽 정렬) -->
+	<div class="w-20 flex-shrink-0 text-right">
 		<span class="text-xs font-medium text-muted uppercase tracking-wide"
-			  th:text="${#temporals.format(entry.date, 'yyyy. M. d. (E)')}">2025. 12. 25. (목)</span>
+			  th:text="${#temporals.format(entry.date, 'MMM d').toUpperCase()}">DEC 30</span>
 	</div>
-	<div class="border border-border p-4 bg-white">
+	<!-- 내용 -->
+	<div class="flex-1 min-w-0">
 		<div class="prose prose-sm max-w-none text-sm leading-relaxed"
 			 th:utext="${entry.contentHtml}">내용</div>
 	</div>
@@ -105,6 +107,12 @@
 	 hx-vals="js:{before: document.getElementById('sentinel-below').dataset.before, limit: 10}"
 	 class="h-4">
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     끝 표시 (더 이상 데이터 없음)
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div th:fragment="endAbove" class="h-4"></div>
+<div th:fragment="endBelow" class="h-4"></div>
 
 </body>
 </html>
