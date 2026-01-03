@@ -36,7 +36,7 @@ class ContentSyncUseCase {
 
         when {
             exitCode != 0 -> {
-                log.error("Content sync failed (exit=$exitCode): $output")
+                log.error("Content sync failed (exit=$exitCode):\n$output")
                 false
             }
             output.contains("Already up to date") -> {
@@ -44,7 +44,7 @@ class ContentSyncUseCase {
                 true
             }
             else -> {
-                log.info("Content sync completed: $output")
+                log.info("Content sync completed:\n$output")
                 true
             }
         }
