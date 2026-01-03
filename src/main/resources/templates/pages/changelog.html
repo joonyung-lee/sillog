@@ -15,7 +15,8 @@
 		</div>
 
 		<!-- Right Panel: Calendar + Roadmap (30%) -->
-		<div class="w-full lg:w-[30%] flex-shrink-0 flex flex-col min-h-0">
+		<!-- 모바일: max-h-[60vh]로 화면 60% 이하로 제한, 데스크톱: 제한 없음 -->
+		<div class="w-full lg:w-[30%] flex-shrink-0 flex flex-col min-h-0 max-h-[60vh] lg:max-h-none">
 			<!-- Calendar (고정 높이) -->
 			<div id="calendar-container"
 				 class="flex-shrink-0"

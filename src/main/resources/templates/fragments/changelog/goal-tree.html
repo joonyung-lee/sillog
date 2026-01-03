@@ -19,7 +19,8 @@
 	</div>
 
 	<!-- 목표 트리 (스크롤 가능) -->
-	<div id="goals-body" class="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+	<!-- 모바일: max-h-[40vh]로 제한, 데스크톱: 제한 없음 -->
+	<div id="goals-body" class="flex-1 min-h-0 overflow-y-auto px-4 py-3 max-h-[40vh] lg:max-h-none">
 		<div class="space-y-1">
 			<th:block th:each="goal : ${goals}">
 				<div th:replace="~{fragments/changelog/goal-tree :: goalNode(${goal})}"></div>
