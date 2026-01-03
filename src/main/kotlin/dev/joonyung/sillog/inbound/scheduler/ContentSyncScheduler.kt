@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -28,8 +28,8 @@ class ContentSyncScheduler(
     private var job: Job? = null
 
     companion object {
-        private val SYNC_INTERVAL: Duration = 5.minutes
-        private val INITIAL_DELAY: Duration = 10.seconds
+        private val SYNC_INTERVAL: Duration = 24.hours
+        private val INITIAL_DELAY: Duration = 3.seconds
     }
 
     init {
@@ -39,6 +39,7 @@ class ContentSyncScheduler(
 
             while (true) {
                 runCatching {
+                    log.info("Content sync started by scheduler")
                     contentSyncUseCase.sync()
                 }.onFailure { log.error("Content sync error", it) }
                 delay(SYNC_INTERVAL)
