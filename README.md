@@ -15,8 +15,18 @@ sillog (from Korean "실록", meaning "veritable records") is a personal blog de
 │      │ :443 (HTTPS)                                                         │
 │      ▼                                                                      │
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ Cloudflare (CDN + TLS termination)                                      │ │
+│ └────────────────────────────┬────────────────────────────────────────────┘ │
+│                              │ Tunnel                                       │
+│                              ▼                                              │
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ cloudflared                                                             │ │
+│ │  • Cloudflare Tunnel connector                                          │ │
+│ └────────────────────────────┬────────────────────────────────────────────┘ │
+│                              │ :80                                          │
+│                              ▼                                              │
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
 │ │ Caddy                                                                   │ │
-│ │  • Automatic HTTPS (Let's Encrypt)                                      │ │
 │ │  • Static file serving (images)                                         │ │
 │ │  • Reverse proxy to application                                         │ │
 │ └────────────────────────────┬────────────────────────────────────────────┘ │
@@ -34,6 +44,8 @@ sillog (from Korean "실록", meaning "veritable records") is a personal blog de
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
 │ │ Content Volume                                                          │ │
 │ │  /content/changelog/YYYY-MM-DD/content.md                               │ │
+│ │  /content/blog/*.md                                                     │ │
+│ │  /content/goals.yaml                                                    │ │
 │ └─────────────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -80,6 +92,7 @@ vim .env
 | `SILLOG_WEBHOOK_API_KEY` | API key for content sync webhook | - |
 | `CONTENT_PATH` | Host path to content directory | `/var/data/sillog-content` |
 | `CADDYFILE` | Caddyfile to use | `Caddyfile` |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Cloudflare Tunnel token | - |
 
 Example `.env` for local development:
 ```bash
@@ -87,6 +100,7 @@ SPRING_PROFILES_ACTIVE=local
 SILLOG_WEBHOOK_API_KEY=local-dev-key
 CONTENT_PATH=/Users/me/sillog-content
 CADDYFILE=Caddyfile.local
+CLOUDFLARE_TUNNEL_TOKEN=  # Not needed for local
 ```
 
 Example `.env` for production:
@@ -95,7 +109,14 @@ SPRING_PROFILES_ACTIVE=prod
 SILLOG_WEBHOOK_API_KEY=$(openssl rand -hex 32)
 CONTENT_PATH=/var/data/sillog-content
 CADDYFILE=Caddyfile
+CLOUDFLARE_TUNNEL_TOKEN=your-tunnel-token-here
 ```
+
+**Getting Cloudflare Tunnel Token:**
+1. Go to [Cloudflare Zero Trust](https://one.dash.cloudflare.com/)
+2. Navigate to Networks → Tunnels
+3. Create a tunnel and copy the token
+4. Configure the tunnel to route traffic to `http://caddy:80`
 
 ### Build & Deploy
 

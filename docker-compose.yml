@@ -23,9 +23,9 @@ services:
   caddy:
     image: caddy:2-alpine
     container_name: sillog-caddy
-    ports:
-      - "80:80"
-      - "443:443"
+    # ports: # for local test
+    #   - "80:80"
+    #   - "443:443"
     volumes:
       - ./${CADDYFILE:-Caddyfile}:/etc/caddy/Caddyfile:ro
       - sillog-content:/srv/content:ro  # Static files (read-only)
@@ -38,6 +38,17 @@ services:
         condition: service_healthy
     networks:
       - sillog-network
+  
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: sillog-cloudflared
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      - caddy
+    networks: [sillog-network]
 
 volumes:
   sillog-content:

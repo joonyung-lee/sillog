@@ -1,7 +1,7 @@
-# Caddyfile for sillog
-# Replace sillog.dev with your actual domain
+# Caddyfile for sillog (Cloudflare Tunnel)
+# Cloudflare handles TLS termination, so we listen on :80
 
-sillog.dev {
+:80 {
     # Compression
     encode gzip zstd
 
@@ -43,7 +43,3 @@ sillog.dev {
     }
 }
 
-# Redirect www to non-www
-www.sillog.dev {
-    redir https://sillog.dev{uri} permanent
-}
